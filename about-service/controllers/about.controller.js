@@ -1,19 +1,25 @@
 // about-service/controllers/about.controller.js
 
-// Hardcoded team details as strictly required by the project specifications to avoid DB dependencies
-// Storing only first_name and last_name with no extra meta-data attributes
-const teamManager = {
-  first_name: 'Idan',
-  last_name: 'Dahan'
-};
+/*
+ * Hardcoded team member details as required by the project specification.
+ * These are not stored in the database to keep the DB clean on submission.
+ * Only first_name and last_name are included as per the spec requirements.
+ */
+const team = [
+  { first_name: 'Idan', last_name: 'Dahan' },
+];
 
-// GET /api/about
+/*
+ * GET /api/about
+ * Returns a JSON array describing the development team members.
+ * Each member includes only first_name and last_name properties.
+ */
 exports.getAbout = (req, res) => {
   try {
-    // Returning the single configuration object directly to map with test scripts expected fields
-    res.json(teamManager);
+    // Returning the hardcoded team array directly to the client
+    res.json(team);
   } catch (err) {
-    // Encapsulating errors using compliant property criteria contracts
+    // Returning a standardized error document on unexpected failure
     res.status(500).json({
       id: 'about-fetch-error',
       message: err.message,

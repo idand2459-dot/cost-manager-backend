@@ -1,10 +1,16 @@
 // users-service/app.js
 
-// Loading environment variables from the shared root path configuration
-require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
-const { createLogger, mongoRequestLogger } = require('../shared/logger');
+/*
+ * Entry point for the Users microservice.
+ * Handles all user-related endpoints:
+ * POST /api/users, GET /api/users, GET /api/users/:id
+ */
 
-// Initializing the specific logger context instance for the users microservice
+// Loading environment variables from the shared root .env file
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
+
+// Initializing the Pino logger and HTTP request logger for this service
+const { createLogger, mongoRequestLogger } = require('../shared/logger');
 const { logger, httpLogger } = createLogger('users-service');
 
 const express = require('express');
@@ -13,48 +19,28 @@ const userRoutes = require('./routes/user.routes');
 
 const app = express();
 
-// Middleware 1: Standard pino HTTP request terminal logging decorator
+// Middleware: Logs every incoming HTTP request using Pino
 app.use(httpLogger);
 
-// Middleware 2: Parses incoming JSON request payloads (Placed early to avoid parser bypasses)
-app.use(express.json());
-
-// Middleware 3: Custom MongoDB request logger to store logs into the database collection
+// Middleware: Saves request log entries to MongoDB
 app.use(mongoRequestLogger('users-service'));
 
-// Routing boundary configuration mapped behind the specified global '/api' prefix
+// Middleware: Parses incoming JSON request bodies
+app.use(express.json());
+
+// Mounting all user-related routes under the /api prefix
 app.use('/api', userRoutes);
 
-// Global Error Handler Middleware: Catches syntax errors like malformed incoming JSON bodies
-app.use((err, req, res, next) => {
-  // Verifying if the exception is a standard Express body-parser failure payload
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    // Returning standard course specification criteria structure (id + message)
-    return res.status(400).json({
-      id: 'malformed-json-payload',
-      message: 'The submitted request payload contains invalid broken JSON syntax.'
-    });
-  }
-  // Passing unexpected error frames along to standard cascading engine blocks
-  next(err);
-});
-
-// Executing connection adapters to establishing states with MongoDB cluster database environments
+// Connecting to MongoDB and starting the server
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    // Emitting logging confirmations upon successful database authentications
     logger.info('Users Service connected to MongoDB');
-    
-    // Assigning execution process ports out of dynamic env configurations or default values
     const port = process.env.PORT || 3000;
-    
-    // Binding the application server framework instance onto its designed network listening target
     app.listen(port, () => logger.info(`Users Service running on port ${port}`));
   })
   .catch((err) => {
-    // Catching and capturing initial cluster connection drop exception events
+    // Logging the connection error and terminating the process
     logger.error({ err }, 'MongoDB connection failed');
-    // Terminating current application node process execution shell sequence
     process.exit(1);
   });

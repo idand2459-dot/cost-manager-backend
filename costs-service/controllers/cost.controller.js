@@ -2,8 +2,7 @@
 
 const Cost = require('../models/cost.model');
 const ComputedReport = require('../models/computed-report.model');
-// We import the User model to verify the user exists before adding a cost item (Requirement 11)
-const User = require('../../users-service/models/user.model'); 
+const mongoose = require('mongoose');
 
 // Maps stored category values to the exact response keys required by the spec.
 // "sports" is stored lowercase-plural but the spec example shows "Sport" (capital S).
@@ -30,33 +29,24 @@ exports.addCost = async (req, res) => {
     // Extracting fields from incoming request body
     const { userid, description, category, sum, created_at } = req.body;
 
-    // Parsing date or falling back to current system arrival time
-    const costDate = created_at ? new Date(created_at) : new Date();
+    // Validating that the referenced user exists in the users collection
+    const userExists = await mongoose.connection.db
+      .collection('users')
+      .findOne({ id: Number(userid) });
 
-    // Verification: Ensure the user actually exists in the database before storing the cost
-    const userExists = await User.findOne({ id: userid });
     if (!userExists) {
       return res.status(404).json({
         id: 'user-not-found',
-        message: `Validation failed: User with ID ${userid} does not exist.`,
+        message: `User with id ${userid} does not exist.`,
       });
     }
 
-    // Setting up today at midnight boundary for comparison
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Enforcing block: Server does not allow adding costs with dates in the past
-    if (costDate < today) {
-      return res.status(400).json({
-        id: 'invalid-date',
-        message: 'Cannot add a cost with a past date.',
-      });
-    }
+    // Parsing date or falling back to current system arrival time
+    const costDate = created_at ? new Date(created_at) : new Date();
 
     // Creating and persisting the cost item in MongoDB
     const cost = await Cost.create({ userid, description, category, sum, created_at: costDate });
-    
+
     // Returning success response with identical properties
     res.status(201).json(cost);
   } catch (err) {
@@ -85,7 +75,14 @@ exports.getReport = async (req, res) => {
     if (isPastMonth(year, month)) {
       const cached = await ComputedReport.findOne({ userid, year, month });
       // If found, immediately serve cached computed object to bypass aggregation pipeline
-      if (cached) return res.json(cached.report);
+      if (cached) {
+        return res.json({
+          userid,
+          year,
+          month,
+          costs: CATEGORY_DISPLAY_KEYS.map((key) => ({ [key]: cached.report[key] })),
+        });
+      }
     }
 
     // Fetching costs matching the targeted user, filtered by dynamic date expressions
@@ -122,10 +119,10 @@ exports.getReport = async (req, res) => {
 
     // Final response document wrapping data context together
     const reportResponse = {
-      userid: userid,
-      year:   year,
-      month:  month,
-      costs:  finalCostsArray
+      userid,
+      year,
+      month,
+      costs: finalCostsArray,
     };
 
     // Computed Pattern Save: Persist report if target month has fully passed
