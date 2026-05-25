@@ -33,7 +33,7 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     logger.info('Logs Service connected to MongoDB');
-    const port = process.env.LOGS_PORT || 3001;
+    const port = process.env.PORT || process.env.LOGS_PORT || 3001;
     app.listen(port, () => logger.info(`Logs Service running on port ${port}`));
   })
   .catch((err) => {
