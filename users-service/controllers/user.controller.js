@@ -1,23 +1,17 @@
+const mongoose = require('mongoose');
 const User = require('../models/user.model');
-const CostRef = require('../models/cost-ref.model');
 
 // POST /api/users
 exports.createUser = async (req, res) => {
   try {
     const { id, first_name, last_name, birthday } = req.body;
 
-    if (!id || !first_name || !last_name || !birthday) {
-      return res.status(400).json({
-        id: 'missing-fields',
-        message: 'id, first_name, last_name, and birthday are required.',
-      });
-    }
-
+    // Check if user already exists to prevent duplicates
     const existing = await User.findOne({ id });
     if (existing) {
       return res.status(409).json({
-        id: 'duplicate-user',
-        message: `User with id ${id} already exists.`,
+        id,
+        message: `User with id ${id} already exists`,
       });
     }
 
@@ -43,22 +37,19 @@ exports.getUserById = async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
     const user = await User.findOne({ id: userId }, 'id first_name last_name birthday -_id');
+
     if (!user) {
-      return res.status(404).json({
-        id: 'user-not-found',
-        message: `User with id ${userId} not found.`,
-      });
+      return res.status(404).json({ id: 'user-not-found', message: 'User not found' });
     }
 
-    /*
-     * Aggregate the total spending for this user across all cost entries.
-     * Uses a read-only CostRef model pointing to the shared costs collection,
-     * keeping the users service decoupled from the costs service's schema.
-     */
-    const [agg] = await CostRef.aggregate([
-      { $match: { userid: userId } },
-      { $group: { _id: null, total: { $sum: '$sum' } } },
-    ]);
+    // Aggregate total costs for this user from the costs collection
+    const [agg] = await mongoose.connection.db
+      .collection('costs')
+      .aggregate([
+        { $match: { userid: userId } },
+        { $group: { _id: null, total: { $sum: '$sum' } } },
+      ])
+      .toArray();
 
     res.json({
       id:         user.id,
