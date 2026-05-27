@@ -1,7 +1,7 @@
 a=http://localhost:3001
 b=http://localhost:3000
 c=http://localhost:3003
-d=http://localhost:3001
+d=http://localhost:3002
 
 testing getting the about
 -------------------------
@@ -22,7 +22,7 @@ testing adding cost item
 ----------------------------------
 url=http://localhost:3003/api/add/
 data.status_code=201
-b'{"userid":123123,"description":"milk 9","category":"food","sum":8,"created_at":"2026-05-27T18:59:30.779Z","_id":"6a173f12fd5ac0f5141ee301","__v":0}'
+b'{"userid":123123,"description":"milk 9","category":"food","sum":8,"created_at":"2026-05-27T19:12:44.901Z","_id":"6a17422cfd5ac0f5141ee309","__v":0}'
 
 testing getting the report - 2
 ------------------------------
