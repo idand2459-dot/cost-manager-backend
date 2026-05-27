@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 // users-service/app.js
 
 /*
@@ -15,12 +13,9 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') }
 const { createLogger, mongoRequestLogger } = require('../shared/logger');
 const { logger, httpLogger } = createLogger('users-service');
 
->>>>>>> corrections
 const express = require('express');
-const { createLogger, mongoRequestLogger } = require('../shared/logger');
+const mongoose = require('mongoose');
 const userRoutes = require('./routes/user.routes');
-
-const { httpLogger } = createLogger('users-service');
 
 const app = express();
 
@@ -36,9 +31,6 @@ app.use(express.json());
 // Mounting all user-related routes under the /api prefix
 app.use('/api', userRoutes);
 
-<<<<<<< HEAD
-module.exports = app;
-=======
 // Connecting to MongoDB and starting the server
 mongoose
   .connect(process.env.MONGO_URI)
@@ -52,4 +44,3 @@ mongoose
     logger.error({ err }, 'MongoDB connection failed');
     process.exit(1);
   });
->>>>>>> corrections
