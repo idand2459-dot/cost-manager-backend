@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-const express = require('express');
-const { createLogger, mongoRequestLogger } = require('../shared/logger');
-=======
 // about-service/app.js
 
 /*
@@ -19,32 +15,22 @@ const { logger, httpLogger } = createLogger('about-service');
 
 const express = require('express');
 const mongoose = require('mongoose');
->>>>>>> corrections
 const aboutRoutes = require('./routes/about.routes');
-
-const { httpLogger } = createLogger('about-service');
 
 const app = express();
 
 // Middleware: Logs every incoming HTTP request using Pino
 app.use(httpLogger);
-<<<<<<< HEAD
-app.use(mongoRequestLogger('about-service'));
-=======
 
 // Middleware: Saves request log entries to MongoDB
 app.use(mongoRequestLogger('about-service'));
 
 // Middleware: Parses incoming JSON request bodies
->>>>>>> corrections
 app.use(express.json());
 
 // Mounting all about-related routes under the /api prefix
 app.use('/api', aboutRoutes);
 
-<<<<<<< HEAD
-module.exports = app;
-=======
 // Connecting to MongoDB and starting the server
 mongoose
   .connect(process.env.MONGO_URI)
@@ -58,4 +44,3 @@ mongoose
     logger.error({ err }, 'MongoDB connection failed');
     process.exit(1);
   });
->>>>>>> corrections
