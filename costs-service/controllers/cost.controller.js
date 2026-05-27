@@ -80,7 +80,7 @@ exports.getReport = async (req, res) => {
           userid,
           year,
           month,
-          costs: CATEGORY_DISPLAY_KEYS.map((key) => ({ [key]: cached.report[key] })),
+          costs: cached.report.costs,
         });
       }
     }
@@ -127,7 +127,11 @@ exports.getReport = async (req, res) => {
 
     // Computed Pattern Save: Persist report if target month has fully passed
     if (isPastMonth(year, month)) {
-      await ComputedReport.create({ userid, year, month, report: reportResponse });
+      await ComputedReport.updateOne(
+        { userid, year, month },
+        { $setOnInsert: { userid, year, month, report: reportResponse } },
+        { upsert: true }
+      );
     }
 
     // Emitting final parsed structure to client

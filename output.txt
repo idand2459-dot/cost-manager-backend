@@ -1,0 +1,32 @@
+a=http://localhost:3001
+b=http://localhost:3000
+c=http://localhost:3003
+d=http://localhost:3001
+
+testing getting the about
+-------------------------
+url=http://localhost:3002/api/about/
+data.status_code=200
+b'[{"first_name":"Idan","last_name":"Dahan"}]'
+data.text=[{"first_name":"Idan","last_name":"Dahan"}]
+[{'first_name': 'Idan', 'last_name': 'Dahan'}]
+
+testing getting the report - 1
+------------------------------
+url=http://localhost:3003/api/report/?id=123123&year=2026&month=1
+data.status_code=200
+b'{"userid":123123,"year":2026,"month":1,"costs":[{"food":[]},{"education":[]},{"health":[]},{"housing":[]},{"Sport":[]}]}'
+data.text={"userid":123123,"year":2026,"month":1,"costs":[{"food":[]},{"education":[]},{"health":[]},{"housing":[]},{"Sport":[]}]}
+
+testing adding cost item
+----------------------------------
+url=http://localhost:3003/api/add/
+data.status_code=201
+b'{"userid":123123,"description":"milk 9","category":"food","sum":8,"created_at":"2026-05-27T18:59:30.779Z","_id":"6a173f12fd5ac0f5141ee301","__v":0}'
+
+testing getting the report - 2
+------------------------------
+url=http://localhost:3003/api/report/?id=123123&year=2026&month=1
+data.status_code=200
+b'{"userid":123123,"year":2026,"month":1,"costs":[{"food":[]},{"education":[]},{"health":[]},{"housing":[]},{"Sport":[]}]}'
+data.text={"userid":123123,"year":2026,"month":1,"costs":[{"food":[]},{"education":[]},{"health":[]},{"housing":[]},{"Sport":[]}]}
